@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duplicate Checker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .validation-input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+    
+    .validation-input:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    .validation-input.error {
+      border-color: #e74c3c;
+      background-color: #fef5f5;
+    }
+    
+    .validation-input.success {
+      border-color: #27ae60;
+      background-color: #f0f9f4;
+    }
+    
+    .validation-input.checking {
+      border-color: #3498db;
+      background-color: #f0f7fc;
+    }
+    
+    .message {
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+      display: none;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .error-message {
+      background-color: #fef5f5;
+      color: #c0392b;
+      border: 1px solid #f5c6cb;
+      border-left: 4px solid #e74c3c;
+    }
+    
+    .success-message {
+      background-color: #f0f9f4;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      border-left: 4px solid #27ae60;
+    }
+    
+    .loading {
+      color: #3498db;
+      font-style: italic;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    
+    .normalized-display {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-group">
+      <label for="vendorInput">Vendor Name</label>
+      <input 
+        type="text" 
+        id="vendorInput" 
+        class="validation-input" 
+        placeholder="Enter vendor name..."
+      />
+      <div id="vendorNormalized" class="normalized-display"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="invoiceInput">Invoice Number</label>
+      <input 
+        type="text" 
+        id="invoiceInput" 
+        class="validation-input" 
+        placeholder="Enter invoice number..."
+      />
+      <div id="invoiceNormalized" class="normalized-display"></div>
+    </div>
+
+    <div id="loadingMessage" class="loading" style="display:none;">
+      🔍 Checking for duplicates...
+    </div>
+    <div id="errorMessage" class="message error-message"></div>
+    <div id="successMessage" class="message success-message"></div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFHNEEsEgY-OfK39Uck8KPUl2blN7HA8fxJHxzPTNkR6wtqSTT_bpaIGF739a5M9JSPw/exec';
+    
+    const vendorInput = document.getElementById('vendorInput');
+    const invoiceInput = document.getElementById('invoiceInput');
+    const vendorNormalized = document.getElementById('vendorNormalized');
+    const invoiceNormalized = document.getElementById('invoiceNormalized');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    const loadingMessage = document.getElementById('loadingMessage');
+    
+    let debounceTimer;
+    let isValid = false;
+    
+    function normalizeInvoice(invoice) {
+      if (!invoice) return '';
+      return String(invoice)
+        .toUpperCase()
+        .trim()
+        .replace(/[^A-Z0-9]/g, '')
+        .replace(/^0+/, '');
+    }
+    
+    function normalizeVendor(vendor) {
+      if (!vendor) return '';
+      
+      let normalized = String(vendor)
+        .toLowerCase()
+        .trim()
+        .replace(/\b(inc|llc|ltd|corp|co|corporation|incorporated|limited|company)\b\.?/g, '')
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      normalized = normalized.replace(/^(the|a|an)\s+/g, '');
+      
+      return normalized;
+    }
+    
+    vendorInput.addEventListener('input', function() {
+      const normalized = normalizeVendor(this.value);
+      vendorNormalized.textContent = normalized ? `Normalized: ${normalized}` : '';
+      triggerValidation();
+    });
+    
+    invoiceInput.addEventListener('input', function() {
+      const normalized = normalizeInvoice(this.value);
+      invoiceNormalized.textContent = normalized ? `Normalized: ${normalized}` : '';
+      triggerValidation();
+    });
+    
+    function triggerValidation() {
+      clearTimeout(debounceTimer);
+      hideMessages();
+      
+      const vendor = vendorInput.value.trim();
+      const invoice = invoiceInput.value.trim();
+      
+      if (!vendor || !invoice) {
+        resetInputs();
+        return;
+      }
+      
+      vendorInput.classList.add('checking');
+      invoiceInput.classList.add('checking');
+      
+      debounceTimer = setTimeout(() => {
+        checkDuplicate(vendor, invoice);
+      }, 800);
+    }
+    
+    async function checkDuplicate(vendor, invoice) {
+      showLoading();
+      
+      try {
+        const url = `${SCRIPT_URL}?vendor=${encodeURIComponent(vendor)}&invoice=${encodeURIComponent(invoice)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        hideLoading();
+        
+        vendorInput.classList.remove('checking');
+        invoiceInput.classList.remove('checking');
+        
+        if (data.duplicate) {
+          showError(data);
+          isValid = false;
+          sendToJotForm(vendor, invoice, 'DUPLICATE', data.normalizedInput);
+        } else {
+          showSuccess(data);
+          isValid = true;
+          sendToJotForm(vendor, invoice, 'VALID', data.normalizedInput);
+        }
+      } catch (error) {
+        hideLoading();
+        vendorInput.classList.remove('checking');
+        invoiceInput.classList.remove('checking');
+        console.error('Error checking duplicate:', error);
+        showError({ error: 'Validation error. Please try again.' });
+        isValid = false;
+      }
+    }
+    
+    function showError(data) {
+      vendorInput.classList.add('error');
+      invoiceInput.classList.add('error');
+      
+      errorMessage.style.display = 'block';
+      
+      if (data.matchedRecord) {
+        errorMessage.innerHTML = `
+          <strong>⚠️ Duplicate Found!</strong><br><br>
+          This vendor and invoice combination already exists in the system.<br><br>
+          <strong>Matched Entry:</strong><br>
+          Row: ${data.matchedRecord.rowNumber}<br>
+          Submitted: ${data.matchedRecord.timestamp}<br>
+          Reference: ${data.matchedRecord.normalizedRef}
+        `;
+      } else if (data.error) {
+        errorMessage.innerHTML = `<strong>Error:</strong> ${data.error}`;
+      }
+    }
+    
+    function showSuccess(data) {
+      vendorInput.classList.add('success');
+      invoiceInput.classList.add('success');
+      
+      successMessage.style.display = 'block';
+      successMessage.innerHTML = `
+        ✓ No duplicate found - this is a unique entry<br>
+        <small>Reference: ${data.normalizedInput}</small>
+      `;
+    }
+    
+    function showLoading() {
+      loadingMessage.style.display = 'block';
+    }
+    
+    function hideLoading() {
+      loadingMessage.style.display = 'none';
+    }
+    
+    function hideMessages() {
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+    }
+    
+    function resetInputs() {
+      vendorInput.classList.remove('error', 'success', 'checking');
+      invoiceInput.classList.remove('error', 'success', 'checking');
+      hideMessages();
+      isValid = false;
+    }
+    
+    function sendToJotForm(vendor, invoice, status, normalizedRef) {
+      if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage({
+          type: 'widget_data',
+          value: {
+            vendor: vendor,
+            invoice: invoice,
+            normalizedRef: normalizedRef,
+            status: status,
+            isValid: isValid
+          }
+        }, '*');
+      }
+    }
+  </script>
+</body>
+</html>
