@@ -1,238 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Duplicate Checker</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-      padding: 15px;
-      background: transparent;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f7fc;
     }
-    
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    
-    .status-box {
-      padding: 15px;
-      border-radius: 6px;
-      margin-bottom: 10px;
-      font-size: 14px;
-      line-height: 1.5;
-      display: none;
-    }
-    
-    .status-box.checking {
-      background-color: #e3f2fd;
-      color: #1976d2;
-      border: 1px solid #90caf9;
-      display: block;
-    }
-    
-    .status-box.error {
-      background-color: #fef5f5;
-      color: #c0392b;
-      border: 1px solid #f5c6cb;
-      border-left: 4px solid #e74c3c;
-      display: block;
-    }
-    
-    .status-box.success {
-      background-color: #f0f9f4;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-      border-left: 4px solid #27ae60;
-      display: block;
-    }
-    
-    .checking-info {
-      font-size: 12px;
-      color: #666;
-      margin-top: 8px;
-      font-style: italic;
+    .test {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div id="statusBox" class="status-box">
-      <div id="statusMessage"></div>
-      <div id="checkingInfo" class="checking-info"></div>
-    </div>
+  <div class="test">
+    <h2>Widget is Loading! ✓</h2>
+    <p>If you see this, the iframe is working.</p>
+    <p id="status">Checking for JotForm fields...</p>
   </div>
-
+  
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFHNEEsEgY-OfK39Uck8KPUl2blN7HA8fxJHxzPTNkR6wtqSTT_bpaIGF739a5M9JSPw/exec';
-    
-    // JotForm Field IDs
-    const VENDOR_DROPDOWN_ID = 'input_8';
-    const VENDOR_OTHER_ID = 'input_19';
-    const INVOICE_ID = 'input_17';
-    const OTHER_VENDOR_TRIGGER = 'Other (Not Listed) - NOT IN COMPLIANCE';
-    
-    const statusBox = document.getElementById('statusBox');
-    const statusMessage = document.getElementById('statusMessage');
-    const checkingInfo = document.getElementById('checkingInfo');
-    
-    let debounceTimer;
-    let lastVendor = '';
-    let lastInvoice = '';
-    
-    // Poll JotForm fields every second
-    setInterval(function() {
+    setTimeout(function() {
       try {
-        const vendorDropdown = window.parent.document.getElementById(VENDOR_DROPDOWN_ID);
-        const vendorOther = window.parent.document.getElementById(VENDOR_OTHER_ID);
-        const invoiceField = window.parent.document.getElementById(INVOICE_ID);
-        
-        if (vendorDropdown && invoiceField) {
-          // Determine which vendor value to use
-          let vendor = '';
-          const dropdownValue = vendorDropdown.value || '';
-          
-          if (dropdownValue === OTHER_VENDOR_TRIGGER && vendorOther) {
-            // Use the "Other" text field if "Other (Not Listed)" is selected
-            vendor = vendorOther.value || '';
-          } else {
-            // Use the dropdown value
-            vendor = dropdownValue;
-          }
-          
-          const invoice = invoiceField.value || '';
-          
-          // Only check if values have changed
-          if (vendor !== lastVendor || invoice !== lastInvoice) {
-            lastVendor = vendor;
-            lastInvoice = invoice;
-            triggerValidation(vendor, invoice);
-          }
-        }
-      } catch (e) {
-        // Cross-origin restriction - widget might be in iframe
-        console.log('Cannot access parent fields - iframe security restriction');
+        const test = window.parent.document.getElementById('input_17');
+        document.getElementById('status').textContent = test ? '✓ Can access fields!' : '✗ Cannot access fields (cross-origin blocked)';
+      } catch(e) {
+        document.getElementById('status').textContent = '✗ Cross-origin security blocked: ' + e.message;
       }
-    }, 1000); // Check every second
-    
-    function normalizeInvoice(invoice) {
-      if (!invoice) return '';
-      return String(invoice)
-        .toUpperCase()
-        .trim()
-        .replace(/[^A-Z0-9]/g, '')
-        .replace(/^0+/, '');
-    }
-    
-    function normalizeVendor(vendor) {
-      if (!vendor) return '';
-      
-      let normalized = String(vendor)
-        .toLowerCase()
-        .trim()
-        .replace(/\b(inc|llc|ltd|corp|co|corporation|incorporated|limited|company)\b\.?/g, '')
-        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      normalized = normalized.replace(/^(the|a|an)\s+/g, '');
-      
-      return normalized;
-    }
-    
-    function triggerValidation(vendor, invoice) {
-      clearTimeout(debounceTimer);
-      
-      if (!vendor || !invoice) {
-        hideStatus();
-        return;
-      }
-      
-      const normalizedVendor = normalizeVendor(vendor);
-      const normalizedInvoice = normalizeInvoice(invoice);
-      
-      showChecking(vendor, invoice, normalizedVendor, normalizedInvoice);
-      
-      debounceTimer = setTimeout(() => {
-        checkDuplicate(vendor, invoice);
-      }, 800);
-    }
-    
-    async function checkDuplicate(vendor, invoice) {
-      try {
-        const url = `${SCRIPT_URL}?vendor=${encodeURIComponent(vendor)}&invoice=${encodeURIComponent(invoice)}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.duplicate) {
-          showError(data);
-          notifyJotForm('DUPLICATE', data);
-        } else {
-          showSuccess(data);
-          notifyJotForm('VALID', data);
-        }
-      } catch (error) {
-        console.error('Error checking duplicate:', error);
-        showErrorMessage('Unable to verify. Please check your connection.');
-      }
-    }
-    
-    function showChecking(vendor, invoice, normalizedVendor, normalizedInvoice) {
-      statusBox.className = 'status-box checking';
-      statusMessage.innerHTML = '🔍 Checking for duplicates...';
-      checkingInfo.textContent = `Checking: ${normalizedVendor}|${normalizedInvoice}`;
-    }
-    
-    function showError(data) {
-      statusBox.className = 'status-box error';
-      
-      if (data.matchedRecord) {
-        statusMessage.innerHTML = `
-          <strong>⚠️ Duplicate Found!</strong><br>
-          This vendor and invoice combination already exists in the system.<br><br>
-          <strong>Matched Entry:</strong><br>
-          Row ${data.matchedRecord.rowNumber} (Submitted: ${data.matchedRecord.timestamp})
-        `;
-        checkingInfo.textContent = `Reference: ${data.matchedRecord.normalizedRef}`;
-      } else {
-        statusMessage.innerHTML = '<strong>⚠️ Duplicate Found!</strong>';
-        checkingInfo.textContent = '';
-      }
-    }
-    
-    function showSuccess(data) {
-      statusBox.className = 'status-box success';
-      statusMessage.innerHTML = '✓ No duplicate found - this is a unique entry';
-      checkingInfo.textContent = data.normalizedInput ? `Reference: ${data.normalizedInput}` : '';
-    }
-    
-    function showErrorMessage(message) {
-      statusBox.className = 'status-box error';
-      statusMessage.innerHTML = `<strong>Error:</strong> ${message}`;
-      checkingInfo.textContent = '';
-    }
-    
-    function hideStatus() {
-      statusBox.className = 'status-box';
-      statusBox.style.display = 'none';
-    }
-    
-    function notifyJotForm(status, data) {
-      if (window.parent && window.parent.postMessage) {
-        window.parent.postMessage({
-          type: 'duplicate_check_result',
-          status: status,
-          data: data
-        }, '*');
-      }
-    }
+    }, 1000);
   </script>
 </body>
 </html>
