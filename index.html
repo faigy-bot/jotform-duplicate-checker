@@ -1,36 +1,53 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f0f7fc;
-    }
-    .test {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <div class="test">
-    <h2>Widget is Loading! ✓</h2>
-    <p>If you see this, the iframe is working.</p>
-    <p id="status">Checking for JotForm fields...</p>
-  </div>
+function doGet(e) {
+  var invoiceNumber = e.parameter.invoice;
+  var vendorName = e.parameter.vendor;
   
-  <script>
-    setTimeout(function() {
-      try {
-        const test = window.parent.document.getElementById('input_17');
-        document.getElementById('status').textContent = test ? '✓ Can access fields!' : '✗ Cannot access fields (cross-origin blocked)';
-      } catch(e) {
-        document.getElementById('status').textContent = '✗ Cross-origin security blocked: ' + e.message;
-      }
-    }, 1000);
-  </script>
-</body>
-</html>
+  // Open your spreadsheet
+  var sheet = SpreadsheetApp.openById('1MAtvdXeGKhjQ9FyzBhh6NY64_bFlxBAPMYHRFp-8PyI').getSheetByName('Form responses');
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  
+  // Find column indices
+  var duplicateCheckColIndex = headers.indexOf('Duplicate Check');
+  var pdfColIndex = headers.indexOf('SharePoint PDF File');
+  
+  if (duplicateCheckColIndex === -1) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        error: 'Duplicate Check column not found in sheet'
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  // Normalize the incoming form input
+  var normalizedInvoice = normalizeInvoiceForDuplicateCheck(invoiceNumber);
+  var normalizedVendor = normalizeVendorForDuplicateCheck(vendorName);
+  var normalizedBillRef = normalizedVendor + '|' + normalizedInvoice;
+  
+  // Search for duplicates
+  var isDuplicate = false;
+  var matchedRow = null;
+  
+  for (var i = 1; i < data.length; i++) {
+    var sheetNormalizedRef = data[i][duplicateCheckColIndex];
+    
+    if (sheetNormalizedRef == normalizedBillRef) {
+      isDuplicate = true;
+      matchedRow = {
+        rowNumber: i + 1,
+        normalizedRef: sheetNormalizedRef,
+        timestamp: data[i][0],
+        pdfUrl: pdfColIndex >= 0 ? data[i][pdfColIndex] : null
+      };
+      break;
+    }
+  }
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      duplicate: isDuplicate,
+      matchedRecord: matchedRow,
+      normalizedInput: normalizedBillRef
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
