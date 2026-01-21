@@ -1,3 +1,55 @@
+
+Screenshot 2026-01-21 at 5.26.29 PM.png
+
+<!DOCTYPE html> <html> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Duplicate Checker</title> <style> * { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: -apple-system
+
+pasted
+
+here is github script, I want to change the styling so it matches rest of jotform:
+
+5:31 PM
+I'll help you update the styling to match the Jotform design. Let me create a revised HTML file with styling that matches the screenshot.
+
+
+Creating updated HTML file with Jotform-matching styling
+duplicate-checker-jotform-styled.html
+
+Presented file
+I've updated the styling to match your Jotform design. Key changes include:
+
+Visual Updates:
+
+Light purple background (
+#f3f3fe) matching Jotform
+Cleaner header with larger, lighter font
+Removed card-style shadow, now full-width white sections
+Updated colors: blue (
+#0099ff), red (
+#d93a00), green (
+#00a651)
+Softer borders and more subtle hover states
+Required asterisks in red
+"Type your answer here..." placeholder text
+Layout:
+
+Separated header and content sections with horizontal divider
+Increased padding and spacing to match Jotform's generous whitespace
+Inputs limited to 480px width like Jotform fields
+Better mobile responsiveness
+All the duplicate checking functionality remains unchanged!
+
+Duplicate checker jotform styled
+Code · HTML 
+
+
+Want to be notified when Claude responds?
+
+
+
+Claude is AI and can make mistakes. Please double-check responses.
+Duplicate checker jotform styled · HTML
+Copy
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -13,168 +65,234 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-      padding: 20px;
-      background: #f8f9fa;
+      background: #f3f3fe;
+      padding: 0;
+      margin: 0;
     }
     
     .container {
-      max-width: 600px;
-      margin: 0 auto;
+      max-width: 100%;
+      margin: 0;
       background: white;
-      padding: 25px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 0;
     }
     
-    h2 {
-      margin-bottom: 20px;
-      color: #333;
-      font-size: 20px;
+    .header {
+      background: white;
+      padding: 40px 60px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+    
+    .header h2 {
+      font-size: 32px;
+      font-weight: 400;
+      color: #2c3345;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+    
+    .header p {
+      color: #6f76a7;
+      font-size: 15px;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+    
+    .content {
+      padding: 40px 60px;
+      background: white;
     }
     
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 32px;
     }
     
     label {
       display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #333;
-      font-size: 14px;
+      margin-bottom: 10px;
+      font-weight: 400;
+      color: #2c3345;
+      font-size: 15px;
+    }
+    
+    label .required {
+      color: #d93a00;
+      margin-left: 2px;
     }
     
     .validation-input {
       width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      transition: all 0.3s;
+      max-width: 480px;
+      padding: 12px 14px;
+      font-size: 15px;
+      border: 1px solid #c3c8d8;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-family: inherit;
+      background: white;
     }
     
     .validation-input:focus {
       outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+      border-color: #0099ff;
+      box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.15);
+    }
+    
+    .validation-input:hover:not(:focus) {
+      border-color: #a0a6bd;
     }
     
     .validation-input.error {
-      border-color: #e74c3c;
-      background-color: #fef5f5;
+      border-color: #d93a00;
+      background-color: #fff5f5;
     }
     
     .validation-input.success {
-      border-color: #27ae60;
-      background-color: #f0f9f4;
+      border-color: #00a651;
+      background-color: #f5fff9;
     }
     
     .validation-input.checking {
-      border-color: #3498db;
-      background-color: #f0f7fc;
+      border-color: #0099ff;
+      background-color: #f7fbff;
     }
     
     .message {
-      padding: 15px;
-      border-radius: 6px;
-      margin-top: 15px;
+      padding: 16px 18px;
+      border-radius: 4px;
+      margin-top: 20px;
       display: none;
       font-size: 14px;
       line-height: 1.6;
+      max-width: 600px;
     }
     
     .error-message {
-      background-color: #fef5f5;
-      color: #c0392b;
-      border: 1px solid #f5c6cb;
-      border-left: 4px solid #e74c3c;
+      background-color: #fff5f5;
+      color: #c7350a;
+      border: 1px solid #ffd4d4;
+      border-left: 4px solid #d93a00;
     }
     
     .success-message {
-      background-color: #f0f9f4;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-      border-left: 4px solid #27ae60;
+      background-color: #f5fff9;
+      color: #00652e;
+      border: 1px solid #c3f0d8;
+      border-left: 4px solid #00a651;
     }
     
     .loading {
-      color: #3498db;
-      font-style: italic;
-      margin-top: 8px;
-      font-size: 13px;
+      color: #0099ff;
+      font-style: normal;
+      margin-top: 12px;
+      font-size: 14px;
     }
     
     .normalized-display {
-      font-size: 12px;
-      color: #666;
-      margin-top: 6px;
+      font-size: 13px;
+      color: #8b91a7;
+      margin-top: 8px;
       font-style: italic;
     }
     
     .pdf-link {
       display: inline-block;
-      margin-top: 12px;
-      padding: 10px 16px;
-      background-color: #3498db;
+      margin-top: 14px;
+      padding: 10px 18px;
+      background-color: #0099ff;
       color: white;
       text-decoration: none;
       border-radius: 4px;
-      font-weight: 600;
-      transition: background-color 0.3s;
+      font-weight: 500;
+      font-size: 14px;
+      transition: background-color 0.2s;
     }
     
     .pdf-link:hover {
-      background-color: #2980b9;
+      background-color: #0077cc;
     }
     
     .match-details {
-      margin-top: 12px;
-      padding: 12px;
-      background-color: #f8f9fa;
+      margin-top: 14px;
+      padding: 14px;
+      background-color: #fafafa;
       border-radius: 4px;
       font-size: 13px;
+      color: #2c3345;
+      line-height: 1.8;
     }
     
     .match-details strong {
       display: inline-block;
-      min-width: 100px;
+      min-width: 90px;
+      color: #5a6079;
+    }
+    
+    .match-details div {
+      margin-bottom: 6px;
+    }
+    
+    .match-details div:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 768px) {
+      .header, .content {
+        padding: 30px 20px;
+      }
+      
+      .header h2 {
+        font-size: 26px;
+      }
+      
+      .validation-input {
+        max-width: 100%;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🔍 Check for Duplicate Invoice</h2>
-    <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
-      Enter the vendor name and invoice number to check if this invoice has already been submitted.
-    </p>
+    <div class="header">
+      <h2>Check for Duplicate Invoice</h2>
+      <p>
+        Input full details below so that there are no delays in processing your invoice entry or payment request.
+      </p>
+    </div>
     
-    <div class="form-group">
-      <label for="vendorInput">Vendor Name</label>
-      <input 
-        type="text" 
-        id="vendorInput" 
-        class="validation-input" 
-        placeholder="Enter vendor name..."
-      />
-      <div id="vendorNormalized" class="normalized-display"></div>
-    </div>
+    <div class="content">
+      <div class="form-group">
+        <label for="vendorInput">
+          Vendor Name <span class="required">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="vendorInput" 
+          class="validation-input" 
+          placeholder="Type your answer here..."
+        />
+        <div id="vendorNormalized" class="normalized-display"></div>
+      </div>
 
-    <div class="form-group">
-      <label for="invoiceInput">Invoice Number</label>
-      <input 
-        type="text" 
-        id="invoiceInput" 
-        class="validation-input" 
-        placeholder="Enter invoice number..."
-      />
-      <div id="invoiceNormalized" class="normalized-display"></div>
-    </div>
+      <div class="form-group">
+        <label for="invoiceInput">
+          Invoice Number <span class="required">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="invoiceInput" 
+          class="validation-input" 
+          placeholder="Type your answer here..."
+        />
+        <div id="invoiceNormalized" class="normalized-display"></div>
+      </div>
 
-    <div id="loadingMessage" class="loading" style="display:none;">
-      🔍 Checking for duplicates...
+      <div id="loadingMessage" class="loading" style="display:none;">
+        🔍 Checking for duplicates...
+      </div>
+      <div id="errorMessage" class="message error-message"></div>
+      <div id="successMessage" class="message success-message"></div>
     </div>
-    <div id="errorMessage" class="message error-message"></div>
-    <div id="successMessage" class="message success-message"></div>
   </div>
 
   <script>
@@ -219,44 +337,44 @@
     }
     
     // ✅ MATCHES Apps Script normalizeVendor()
-function normalizeVendor(vendor) {
-  if (!vendor) return '';
-  
-  let normalized = String(vendor).trim();
-  
-  // 1. Remove "Other (Not Listed) -" prefix
-  normalized = normalized.replace(/^other\s*\(not\s+listed\)\s*-?\s*/i, '');
-  
-  // 2. Remove "- NOT IN COMPLIANCE" suffix
-  normalized = normalized.replace(/\s*-\s*not\s+in\s+compliance\s*$/i, '');
-  
-  // 3. Remove business entity suffixes (at end of string)
-  normalized = normalized.replace(/\s+(llc|inc|corp|company|co|corporation|incorporated|ltd|limited)\s*$/gi, '');
-  
-  // 4. Remove anything inside parentheses (including the parentheses)
-  normalized = normalized.replace(/\([^)]*\)/g, '');
-  
-  // 5. Clean up multiple spaces and trim
-  normalized = normalized.replace(/\s+/g, ' ').trim();
-  
-  // 6. Split into words, filter out "and", remove trailing 's' from each word, rejoin WITHOUT spaces
-  const words = normalized.split(' ');
-  const wordsWithoutTrailingS = words
-    .filter(word => word.toLowerCase() !== 'and') // ✅ NEW: Remove "and"
-    .map(word => {
-      if (word.length > 1 && word.endsWith('s')) {
-        return word.slice(0, -1);  // Remove last character
-      }
-      return word;
-    });
-  normalized = wordsWithoutTrailingS.join('');  // Join without spaces
-  
-  // 7. Remove any remaining non-alphanumeric characters
-  normalized = normalized.replace(/[^a-zA-Z0-9]/g, '');
-  
-  // 8. Convert to lowercase
-  return normalized.toLowerCase();
-}
+    function normalizeVendor(vendor) {
+      if (!vendor) return '';
+      
+      let normalized = String(vendor).trim();
+      
+      // 1. Remove "Other (Not Listed) -" prefix
+      normalized = normalized.replace(/^other\s*\(not\s+listed\)\s*-?\s*/i, '');
+      
+      // 2. Remove "- NOT IN COMPLIANCE" suffix
+      normalized = normalized.replace(/\s*-\s*not\s+in\s+compliance\s*$/i, '');
+      
+      // 3. Remove business entity suffixes (at end of string)
+      normalized = normalized.replace(/\s+(llc|inc|corp|company|co|corporation|incorporated|ltd|limited)\s*$/gi, '');
+      
+      // 4. Remove anything inside parentheses (including the parentheses)
+      normalized = normalized.replace(/\([^)]*\)/g, '');
+      
+      // 5. Clean up multiple spaces and trim
+      normalized = normalized.replace(/\s+/g, ' ').trim();
+      
+      // 6. Split into words, filter out "and", remove trailing 's' from each word, rejoin WITHOUT spaces
+      const words = normalized.split(' ');
+      const wordsWithoutTrailingS = words
+        .filter(word => word.toLowerCase() !== 'and')
+        .map(word => {
+          if (word.length > 1 && word.endsWith('s')) {
+            return word.slice(0, -1);
+          }
+          return word;
+        });
+      normalized = wordsWithoutTrailingS.join('');
+      
+      // 7. Remove any remaining non-alphanumeric characters
+      normalized = normalized.replace(/[^a-zA-Z0-9]/g, '');
+      
+      // 8. Convert to lowercase
+      return normalized.toLowerCase();
+    }
     
     vendorInput.addEventListener('input', function() {
       const normalized = normalizeVendor(this.value);
@@ -391,3 +509,5 @@ function normalizeVendor(vendor) {
   </script>
 </body>
 </html>
+
+
