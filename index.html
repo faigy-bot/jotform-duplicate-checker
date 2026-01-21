@@ -202,18 +202,15 @@
       // 2. Remove "INV" prefix (with or without hyphen/space)
       normalized = normalized.replace(/^inv[\s-]*/i, '');
       
-      // 3. Remove all punctuation (including hyphens)
-      normalized = normalized.replace(/[^\w\s]/g, '');
+      // 3. Remove all non-alphanumeric characters (including hyphens and spaces)
+      normalized = normalized.replace(/[^a-zA-Z0-9]/g, '');
       
-      // 4. Trim again
-      normalized = normalized.trim();
-      
-      // 5. Remove leading zeros (only if purely numeric)
+      // 4. Remove leading zeros (only if purely numeric)
       if (/^\d+$/.test(normalized)) {
         normalized = normalized.replace(/^0+/, '') || '0';
       }
       
-      // 6. Convert to lowercase
+      // 5. Convert to lowercase
       return normalized.toLowerCase();
     }
     
@@ -222,25 +219,23 @@
       
       let normalized = String(vendor).trim();
       
-      // 1. Remove "- NOT IN COMPLIANCE" suffix
-      normalized = normalized.replace(/\s*-\s*not\s+in\s+compliance\s*$/i, '');
-      
-      // 2. Remove "Other (Not Listed)" prefix
+      // 1. Remove "Other (Not Listed) -" prefix
       normalized = normalized.replace(/^other\s*\(not\s+listed\)\s*-?\s*/i, '');
       
-      // 3. Remove business entity suffixes at end of string
-      normalized = normalized.replace(/\s*(llc|l\.l\.c\.?|inc\.?|incorporated|corp\.?|corporation|co\.?|company)\s*$/gi, '');
+      // 2. Remove "- NOT IN COMPLIANCE" suffix
+      normalized = normalized.replace(/\s*-\s*not\s+in\s+compliance\s*$/i, '');
       
-      // 4. Remove all punctuation
-      normalized = normalized.replace(/[^\w\s]/g, '');
+      // 3. Remove business entity suffixes
+      normalized = normalized.replace(/\s+(llc|inc|corp|company|co|corporation|incorporated|ltd|limited)\s*$/gi, '');
       
-      // 5. Collapse multiple spaces
-      normalized = normalized.replace(/\s+/g, ' ').trim();
+      // 4. Remove all non-alphanumeric (including ALL spaces and punctuation)
+      normalized = normalized.replace(/[^a-zA-Z0-9]/g, '');
       
-      // 6. Strip trailing 's' to handle plural variations
-      normalized = normalized.replace(/s\b/gi, '');
+      // 5. Strip trailing 's' from any letter
+      normalized = normalized.replace(/([a-zA-Z])s([a-zA-Z])/g, '$1$2'); // middle of string
+      normalized = normalized.replace(/([a-zA-Z])s$/g, '$1'); // end of string
       
-      // 7. Convert to lowercase
+      // 6. Convert to lowercase
       return normalized.toLowerCase();
     }
     
