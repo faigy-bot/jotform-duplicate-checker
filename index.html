@@ -191,6 +191,7 @@
     let debounceTimer;
     let isValid = false;
     
+    // ✅ MATCHES Apps Script normalizeInvoice()
     function normalizeInvoice(invoice) {
       if (!invoice) return '';
       
@@ -202,18 +203,22 @@
       // 2. Remove "INV" prefix (with or without hyphen/space)
       normalized = normalized.replace(/^inv[\s-]*/i, '');
       
-      // 3. Remove all non-alphanumeric characters (including hyphens and spaces)
-      normalized = normalized.replace(/[^a-zA-Z0-9]/g, '');
+      // 3. Remove all punctuation (periods, hyphens, apostrophes, etc.)
+      normalized = normalized.replace(/[^\w\s]/g, '');
       
-      // 4. Remove leading zeros (only if purely numeric)
+      // 4. Trim again after removing punctuation
+      normalized = normalized.trim();
+      
+      // 5. Strip leading zeros only if the result is purely numeric
       if (/^\d+$/.test(normalized)) {
         normalized = normalized.replace(/^0+/, '') || '0';
       }
       
-      // 5. Convert to lowercase
+      // 6. Convert to lowercase
       return normalized.toLowerCase();
     }
     
+    // ✅ MATCHES Apps Script normalizeVendor()
     function normalizeVendor(vendor) {
       if (!vendor) return '';
       
@@ -225,17 +230,29 @@
       // 2. Remove "- NOT IN COMPLIANCE" suffix
       normalized = normalized.replace(/\s*-\s*not\s+in\s+compliance\s*$/i, '');
       
-      // 3. Remove business entity suffixes
+      // 3. Remove business entity suffixes (at end of string)
       normalized = normalized.replace(/\s+(llc|inc|corp|company|co|corporation|incorporated|ltd|limited)\s*$/gi, '');
       
-      // 4. Remove all non-alphanumeric (including ALL spaces and punctuation)
+      // 4. Remove anything inside parentheses (including the parentheses)
+      normalized = normalized.replace(/\([^)]*\)/g, '');
+      
+      // 5. Clean up multiple spaces and trim
+      normalized = normalized.replace(/\s+/g, ' ').trim();
+      
+      // 6. Split into words, remove trailing 's' from each word, rejoin WITHOUT spaces
+      const words = normalized.split(' ');
+      const wordsWithoutTrailingS = words.map(word => {
+        if (word.length > 1 && word.endsWith('s')) {
+          return word.slice(0, -1);  // Remove last character
+        }
+        return word;
+      });
+      normalized = wordsWithoutTrailingS.join('');  // Join without spaces
+      
+      // 7. Remove any remaining non-alphanumeric characters
       normalized = normalized.replace(/[^a-zA-Z0-9]/g, '');
       
-      // 5. Strip trailing 's' from any letter
-      normalized = normalized.replace(/([a-zA-Z])s([a-zA-Z])/g, '$1$2'); // middle of string
-      normalized = normalized.replace(/([a-zA-Z])s$/g, '$1'); // end of string
-      
-      // 6. Convert to lowercase
+      // 8. Convert to lowercase
       return normalized.toLowerCase();
     }
     
