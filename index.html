@@ -219,42 +219,44 @@
     }
     
     // ✅ MATCHES Apps Script normalizeVendor()
-    function normalizeVendor(vendor) {
-      if (!vendor) return '';
-      
-      let normalized = String(vendor).trim();
-      
-      // 1. Remove "Other (Not Listed) -" prefix
-      normalized = normalized.replace(/^other\s*\(not\s+listed\)\s*-?\s*/i, '');
-      
-      // 2. Remove "- NOT IN COMPLIANCE" suffix
-      normalized = normalized.replace(/\s*-\s*not\s+in\s+compliance\s*$/i, '');
-      
-      // 3. Remove business entity suffixes (at end of string)
-      normalized = normalized.replace(/\s+(llc|inc|corp|company|co|corporation|incorporated|ltd|limited)\s*$/gi, '');
-      
-      // 4. Remove anything inside parentheses (including the parentheses)
-      normalized = normalized.replace(/\([^)]*\)/g, '');
-      
-      // 5. Clean up multiple spaces and trim
-      normalized = normalized.replace(/\s+/g, ' ').trim();
-      
-      // 6. Split into words, remove trailing 's' from each word, rejoin WITHOUT spaces
-      const words = normalized.split(' ');
-      const wordsWithoutTrailingS = words.map(word => {
-        if (word.length > 1 && word.endsWith('s')) {
-          return word.slice(0, -1);  // Remove last character
-        }
-        return word;
-      });
-      normalized = wordsWithoutTrailingS.join('');  // Join without spaces
-      
-      // 7. Remove any remaining non-alphanumeric characters
-      normalized = normalized.replace(/[^a-zA-Z0-9]/g, '');
-      
-      // 8. Convert to lowercase
-      return normalized.toLowerCase();
-    }
+function normalizeVendor(vendor) {
+  if (!vendor) return '';
+  
+  let normalized = String(vendor).trim();
+  
+  // 1. Remove "Other (Not Listed) -" prefix
+  normalized = normalized.replace(/^other\s*\(not\s+listed\)\s*-?\s*/i, '');
+  
+  // 2. Remove "- NOT IN COMPLIANCE" suffix
+  normalized = normalized.replace(/\s*-\s*not\s+in\s+compliance\s*$/i, '');
+  
+  // 3. Remove business entity suffixes (at end of string)
+  normalized = normalized.replace(/\s+(llc|inc|corp|company|co|corporation|incorporated|ltd|limited)\s*$/gi, '');
+  
+  // 4. Remove anything inside parentheses (including the parentheses)
+  normalized = normalized.replace(/\([^)]*\)/g, '');
+  
+  // 5. Clean up multiple spaces and trim
+  normalized = normalized.replace(/\s+/g, ' ').trim();
+  
+  // 6. Split into words, filter out "and", remove trailing 's' from each word, rejoin WITHOUT spaces
+  const words = normalized.split(' ');
+  const wordsWithoutTrailingS = words
+    .filter(word => word.toLowerCase() !== 'and') // ✅ NEW: Remove "and"
+    .map(word => {
+      if (word.length > 1 && word.endsWith('s')) {
+        return word.slice(0, -1);  // Remove last character
+      }
+      return word;
+    });
+  normalized = wordsWithoutTrailingS.join('');  // Join without spaces
+  
+  // 7. Remove any remaining non-alphanumeric characters
+  normalized = normalized.replace(/[^a-zA-Z0-9]/g, '');
+  
+  // 8. Convert to lowercase
+  return normalized.toLowerCase();
+}
     
     vendorInput.addEventListener('input', function() {
       const normalized = normalizeVendor(this.value);
